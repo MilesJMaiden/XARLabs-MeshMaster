@@ -152,10 +152,13 @@ MonoBehaviour:
   m_material: {fileID: 2100000, guid: 2826259f599ea8f498ec91743b1f8c57, type: 2}
   m_Radius: 1
   m_Height: 2
+  m_EnableRotation: 1
   m_TargetTransform: {fileID: 1353471410}
   m_AngularSpeed: 90
+  m_EnableColor: 1
   m_FrontColor: {r: 1, g: 0, b: 0, a: 1}
   m_BackColor: {r: 0, g: 0, b: 1, a: 1}
+  m_EnableNoise: 1
   m_NoiseAmplitude: 1
   m_NoiseFrequency: 1
   m_NoiseSpeed: 2
@@ -193,7 +196,7 @@ MonoBehaviour:
   m_PhaseOffset: 3
   m_ShowCurve: 1
   m_CurveResolution: 400
-  m_LineWidth: 0.1
+  m_LineWidth: 0.15
   m_LineMaterial: {fileID: 2100000, guid: 2826259f599ea8f498ec91743b1f8c57, type: 2}
 --- !u!1 &381186494
 GameObject:
@@ -475,7 +478,7 @@ MonoBehaviour:
   m_PhaseOffset: 4.75
   m_ShowCurve: 1
   m_CurveResolution: 400
-  m_LineWidth: 0.1
+  m_LineWidth: 0.15
   m_LineMaterial: {fileID: 2100000, guid: d50c2b80f9557ea41b7a37620a3e8c2c, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
