@@ -3,12 +3,15 @@ using UnityEngine;
 
 #region PentagonalPrism
 /// <summary>
-/// Generates a pentagonal prism as a child named "ObjectA", with outward-facing normals.
+/// Generates a pentagonal prism as a child named "ObjectA", with outward-facing normals,
+/// and rotates the prism to face a target Transform at a configurable angular speed.
 /// </summary>
 public class PentagonalPrism : ProceduralMesh
 {
     #region Fields
+
     [Header("Prism Settings")]
+
     [Tooltip("Radius of the pentagon base.")]
     [SerializeField]
     private float m_Radius = 1f;
@@ -16,14 +19,53 @@ public class PentagonalPrism : ProceduralMesh
     [Tooltip("Total height of the prism.")]
     [SerializeField]
     private float m_Height = 2f;
+
+    [Header("Rotation Settings")]
+
+    [Tooltip("Transform of the target to face.")]
+    [SerializeField]
+    private Transform m_TargetTransform;
+
+    [Tooltip("Angular speed (in degrees per second) at which to rotate towards the target.")]
+    [SerializeField]
+    private float m_AngularSpeed = 90f;
+
     #endregion
 
     #region Properties
+
     /// <inheritdoc/>
     protected override string ObjectName => "ObjectA";
+
+    #endregion
+
+    #region Unity Callbacks
+
+    /// <summary>
+    /// Every frame, rotates the prism to look at the assigned target transform.
+    /// </summary>
+    private void Update()
+    {
+        if (m_TargetTransform == null)
+            return;
+
+        Vector3 directionToTarget = m_TargetTransform.position - transform.position;
+        if (directionToTarget.sqrMagnitude < Mathf.Epsilon)
+            return;
+
+        Quaternion currentRot = transform.rotation;
+        Quaternion targetRot = Quaternion.LookRotation(directionToTarget.normalized, Vector3.up);
+        transform.rotation = Quaternion.RotateTowards(
+            currentRot,
+            targetRot,
+            m_AngularSpeed * Time.deltaTime
+        );
+    }
+
     #endregion
 
     #region Mesh Generation
+
     /// <inheritdoc/>
     /// <remarks>
     /// Creates:
@@ -108,6 +150,7 @@ public class PentagonalPrism : ProceduralMesh
         targetMesh.SetVertices(vertices);
         targetMesh.SetTriangles(triangles, 0);
     }
+
     #endregion
 }
 #endregion

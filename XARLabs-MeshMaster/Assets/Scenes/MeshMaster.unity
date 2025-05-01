@@ -150,8 +150,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_material: {fileID: 2100000, guid: 2826259f599ea8f498ec91743b1f8c57, type: 2}
-  m_Radius: 1
-  m_Height: 2
+  m_radius: 1
+  m_height: 2
+  m_targetTransform: {fileID: 1353471410}
+  m_angularSpeed: 180
 --- !u!4 &180584555
 Transform:
   m_ObjectHideFlags: 0
@@ -161,7 +163,7 @@ Transform:
   m_GameObject: {fileID: 180584553}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2, y: 0, z: 2}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -185,9 +187,9 @@ MonoBehaviour:
   m_FrequencyY: 4
   m_PhaseOffset: 3
   m_ShowCurve: 1
-  m_CurveResolution: 100
-  m_LineWidth: 0.05
-  m_LineMaterial: {fileID: 2100000, guid: ae6a507f6a3bc2a42b664b38b137a682, type: 2}
+  m_CurveResolution: 400
+  m_LineWidth: 0.1
+  m_LineMaterial: {fileID: 2100000, guid: 2826259f599ea8f498ec91743b1f8c57, type: 2}
 --- !u!1 &381186494
 GameObject:
   m_ObjectHideFlags: 0
@@ -443,7 +445,7 @@ Transform:
   m_GameObject: {fileID: 1353471408}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2, y: 0, z: 2}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -461,20 +463,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52273ade35c00a04a95eaebfe064537c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_AmplitudeX: 4
-  m_AmplitudeY: 3
-  m_FrequencyX: 2
-  m_FrequencyY: 4
-  m_PhaseOffset: 3
+  m_AmplitudeX: 6
+  m_AmplitudeY: 4.5
+  m_FrequencyX: 3
+  m_FrequencyY: 1
+  m_PhaseOffset: 4.75
   m_ShowCurve: 1
-  m_CurveResolution: 100
-  m_LineWidth: 0.05
-  m_LineMaterial: {fileID: 2100000, guid: ae6a507f6a3bc2a42b664b38b137a682, type: 2}
+  m_CurveResolution: 400
+  m_LineWidth: 0.1
+  m_LineMaterial: {fileID: 2100000, guid: d50c2b80f9557ea41b7a37620a3e8c2c, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 381186497}
   - {fileID: 792033665}
-  - {fileID: 1353471410}
   - {fileID: 180584555}
+  - {fileID: 1353471410}
