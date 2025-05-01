@@ -25,6 +25,10 @@ public class PentagonalPrism : ProceduralMesh
 
     [Header("Rotation Settings")]
 
+    [Tooltip("Enable rotation logic.")]
+    [SerializeField]
+    private bool m_EnableRotation = true;
+
     [Tooltip("Transform of the target to face.")]
     [SerializeField]
     private Transform m_TargetTransform;
@@ -35,6 +39,10 @@ public class PentagonalPrism : ProceduralMesh
 
     [Header("Color Settings")]
 
+    [Tooltip("Enable color interpolation logic.")]
+    [SerializeField]
+    private bool m_EnableColor = true;
+
     [Tooltip("Color when the target is directly in front.")]
     [SerializeField]
     private Color m_FrontColor = Color.red;
@@ -44,6 +52,10 @@ public class PentagonalPrism : ProceduralMesh
     private Color m_BackColor = Color.blue;
 
     [Header("Noise Settings")]
+
+    [Tooltip("Enable vertex noise animation logic.")]
+    [SerializeField]
+    private bool m_EnableNoise = true;
 
     [Tooltip("Amplitude of vertex displacement along normals.")]
     [SerializeField]
@@ -143,12 +155,14 @@ public class PentagonalPrism : ProceduralMesh
             Vector3 toTarget = m_TargetTransform.position - transform.position;
             if (toTarget.sqrMagnitude > Mathf.Epsilon)
             {
-                RotateTowardsTarget(toTarget);
-                UpdateColorBasedOnAngle(toTarget);
+                if (m_EnableRotation)
+                    RotateTowardsTarget(toTarget);
+                if (m_EnableColor)
+                    UpdateColorBasedOnAngle(toTarget);
             }
         }
 
-        if (m_Mesh != null && m_OriginalVertices != null && m_OriginalNormals != null)
+        if (m_Mesh != null && m_OriginalVertices != null && m_OriginalNormals != null && m_EnableNoise)
         {
             AnimateVertices();
         }
