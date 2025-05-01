@@ -1,10 +1,12 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 #region PentagonalPrism
 /// <summary>
 /// Generates a pentagonal prism as a child named "ObjectA", with outward-facing normals,
-/// and rotates the prism to face a target Transform at a configurable angular speed.
+/// rotates the prism to face a target Transform at a configurable angular speed,
+/// and interpolates its base material color between frontColor and backColor
+/// based on the angle to the target (red when in front, blue when behind).
 /// </summary>
 public class PentagonalPrism : ProceduralMesh
 {
@@ -30,11 +32,34 @@ public class PentagonalPrism : ProceduralMesh
     [SerializeField]
     private float m_AngularSpeed = 90f;
 
+    [Header("Color Settings")]
+
+    [Tooltip("Color when the target is directly in front.")]
+    [SerializeField]
+    private Color m_FrontColor = Color.red;
+
+    [Tooltip("Color when the target is directly behind.")]
+    [SerializeField]
+    private Color m_BackColor = Color.blue;
+
+    #endregion
+
+    #region Private Members
+
+    /// <summary>
+    /// MeshRenderer on the generated child, used to update the material color.
+    /// </summary>
+    private MeshRenderer m_meshRenderer;
+
+    /// <summary>
+    /// Instance material retrieved from the child’s MeshRenderer.
+    /// </summary>
+    private Material m_instanceMaterial;
+
     #endregion
 
     #region Properties
 
-    /// <inheritdoc/>
     protected override string ObjectName => "ObjectA";
 
     #endregion
@@ -42,19 +67,54 @@ public class PentagonalPrism : ProceduralMesh
     #region Unity Callbacks
 
     /// <summary>
-    /// Every frame, rotates the prism to look at the assigned target transform.
+    /// After the mesh is built by the base class, grab the child’s MeshRenderer
+    /// and instantiate its material for color updates.
+    /// </summary>
+    private void Start()
+    {
+        Transform child = transform.Find(ObjectName);
+        if (child != null)
+        {
+            m_meshRenderer = child.GetComponent<MeshRenderer>();
+            if (m_meshRenderer != null)
+                m_instanceMaterial = m_meshRenderer.material;
+            else
+                Debug.LogWarning($"[{name}] MeshRenderer not found on child '{ObjectName}'.");
+        }
+        else
+        {
+            Debug.LogWarning($"[{name}] Child '{ObjectName}' not found for color manipulation.");
+        }
+    }
+
+    /// <summary>
+    /// Each frame, rotates to face the target and updates the base color.
     /// </summary>
     private void Update()
     {
-        if (m_TargetTransform == null)
+        if (m_TargetTransform == null || m_instanceMaterial == null)
             return;
 
-        Vector3 directionToTarget = m_TargetTransform.position - transform.position;
-        if (directionToTarget.sqrMagnitude < Mathf.Epsilon)
+        Vector3 toTarget = m_TargetTransform.position - transform.position;
+        if (toTarget.sqrMagnitude < Mathf.Epsilon)
             return;
 
+        RotateTowardsTarget(toTarget);
+        UpdateColorBasedOnAngle(toTarget);
+    }
+
+    #endregion
+
+    #region Rotation Logic
+
+    /// <summary>
+    /// Smoothly rotates the prism to face the target direction.
+    /// </summary>
+    /// <param name="toTarget">Vector from prism to target.</param>
+    private void RotateTowardsTarget(Vector3 toTarget)
+    {
         Quaternion currentRot = transform.rotation;
-        Quaternion targetRot = Quaternion.LookRotation(directionToTarget.normalized, Vector3.up);
+        Quaternion targetRot = Quaternion.LookRotation(toTarget.normalized, Vector3.up);
         transform.rotation = Quaternion.RotateTowards(
             currentRot,
             targetRot,
@@ -64,15 +124,31 @@ public class PentagonalPrism : ProceduralMesh
 
     #endregion
 
+    #region Color Logic
+
+    /// <summary>
+    /// Updates the material color by interpolating between backColor and frontColor
+    /// based on the angle between the prism's forward vector and the target direction.
+    /// </summary>
+    /// <param name="toTarget">Vector from prism to target.</param>
+    private void UpdateColorBasedOnAngle(Vector3 toTarget)
+    {
+        float dot = Vector3.Dot(transform.forward, toTarget.normalized);
+        float t = (dot + 1f) * 0.5f;  // maps [-1,1] → [0,1]
+        Color c = Color.Lerp(m_BackColor, m_FrontColor, t);
+        m_instanceMaterial.color = c;
+    }
+
+    #endregion
+
     #region Mesh Generation
 
-    /// <inheritdoc/>
-    /// <remarks>
+    /// <summary>
     /// Creates:
     /// - A bottom cap (fan) with normals pointing downwards (outward).
     /// - A top cap (fan) with normals pointing upwards (outward).
     /// - Side faces (quads split into two triangles) with outward normals.
-    /// </remarks>
+    /// </summary>
     protected override void BuildMesh(Mesh targetMesh)
     {
         const int sideCount = 5;
@@ -121,7 +197,6 @@ public class PentagonalPrism : ProceduralMesh
         {
             int thisTop = sideCount + i;
             int nextTop = sideCount + ((i + 1) % sideCount);
-
             triangles.Add(topCenterIndex);
             triangles.Add(nextTop);
             triangles.Add(thisTop);
