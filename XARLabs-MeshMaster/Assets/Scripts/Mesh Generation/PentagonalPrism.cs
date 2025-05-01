@@ -5,8 +5,9 @@ using UnityEngine;
 /// <summary>
 /// Generates a pentagonal prism as a child named "ObjectA", with outward-facing normals,
 /// rotates the prism to face a target Transform at a configurable angular speed,
-/// and interpolates its base material color between frontColor and backColor
-/// based on the angle to the target (red when in front, blue when behind).
+/// interpolates its base material color between frontColor and backColor
+/// based on the angle to the target (red when in front, blue when behind),
+/// and animates its vertices along their normals using Perlin noise.
 /// </summary>
 public class PentagonalPrism : ProceduralMesh
 {
@@ -42,6 +43,20 @@ public class PentagonalPrism : ProceduralMesh
     [SerializeField]
     private Color m_BackColor = Color.blue;
 
+    [Header("Noise Settings")]
+
+    [Tooltip("Amplitude of vertex displacement along normals.")]
+    [SerializeField]
+    private float m_NoiseAmplitude = 0.1f;
+
+    [Tooltip("Spatial frequency of the Perlin noise.")]
+    [SerializeField]
+    private float m_NoiseFrequency = 1f;
+
+    [Tooltip("Speed at which the noise field evolves over time.")]
+    [SerializeField]
+    private float m_NoiseSpeed = 1f;
+
     #endregion
 
     #region Private Members
@@ -49,12 +64,32 @@ public class PentagonalPrism : ProceduralMesh
     /// <summary>
     /// MeshRenderer on the generated child, used to update the material color.
     /// </summary>
-    private MeshRenderer m_meshRenderer;
+    private MeshRenderer m_MeshRenderer;
 
     /// <summary>
     /// Instance material retrieved from the child’s MeshRenderer.
     /// </summary>
-    private Material m_instanceMaterial;
+    private Material m_InstanceMaterial;
+
+    /// <summary>
+    /// MeshFilter on the generated child, used to access and modify the mesh.
+    /// </summary>
+    private MeshFilter m_MeshFilter;
+
+    /// <summary>
+    /// Instance mesh created by ProceduralMesh.
+    /// </summary>
+    private Mesh m_Mesh;
+
+    /// <summary>
+    /// Original vertex positions of the mesh.
+    /// </summary>
+    private Vector3[] m_OriginalVertices;
+
+    /// <summary>
+    /// Original vertex normals of the mesh.
+    /// </summary>
+    private Vector3[] m_OriginalNormals;
 
     #endregion
 
@@ -68,39 +103,55 @@ public class PentagonalPrism : ProceduralMesh
 
     /// <summary>
     /// After the mesh is built by the base class, grab the child’s MeshRenderer
-    /// and instantiate its material for color updates.
-    /// </summary>
+    /// instantiate its material for color updates, and cache original mesh data for animation.    /// </summary>
     private void Start()
     {
         Transform child = transform.Find(ObjectName);
-        if (child != null)
+        if (child == null)
         {
-            m_meshRenderer = child.GetComponent<MeshRenderer>();
-            if (m_meshRenderer != null)
-                m_instanceMaterial = m_meshRenderer.material;
-            else
-                Debug.LogWarning($"[{name}] MeshRenderer not found on child '{ObjectName}'.");
+            Debug.LogWarning($"[{name}] Child '{ObjectName}' not found for initialization.");
+            return;
+        }
+
+        m_MeshRenderer = child.GetComponent<MeshRenderer>();
+        if (m_MeshRenderer != null)
+            m_InstanceMaterial = m_MeshRenderer.material;
+        else
+            Debug.LogWarning($"[{name}] MeshRenderer not found on child '{ObjectName}'.");
+
+        m_MeshFilter = child.GetComponent<MeshFilter>();
+        if (m_MeshFilter != null)
+        {
+            m_Mesh = m_MeshFilter.mesh;
+            m_OriginalVertices = m_Mesh.vertices;
+            m_OriginalNormals = m_Mesh.normals;
         }
         else
         {
-            Debug.LogWarning($"[{name}] Child '{ObjectName}' not found for color manipulation.");
+            Debug.LogWarning($"[{name}] MeshFilter not found on child '{ObjectName}'.");
         }
     }
 
     /// <summary>
-    /// Each frame, rotates to face the target and updates the base color.
+    /// Each frame: rotates to face the target and updates the base color,
+    /// and animates the mesh vertices along their normals via Perlin noise.
     /// </summary>
     private void Update()
     {
-        if (m_TargetTransform == null || m_instanceMaterial == null)
-            return;
+        if (m_TargetTransform != null && m_InstanceMaterial != null)
+        {
+            Vector3 toTarget = m_TargetTransform.position - transform.position;
+            if (toTarget.sqrMagnitude > Mathf.Epsilon)
+            {
+                RotateTowardsTarget(toTarget);
+                UpdateColorBasedOnAngle(toTarget);
+            }
+        }
 
-        Vector3 toTarget = m_TargetTransform.position - transform.position;
-        if (toTarget.sqrMagnitude < Mathf.Epsilon)
-            return;
-
-        RotateTowardsTarget(toTarget);
-        UpdateColorBasedOnAngle(toTarget);
+        if (m_Mesh != null && m_OriginalVertices != null && m_OriginalNormals != null)
+        {
+            AnimateVertices();
+        }
     }
 
     #endregion
@@ -136,7 +187,37 @@ public class PentagonalPrism : ProceduralMesh
         float dot = Vector3.Dot(transform.forward, toTarget.normalized);
         float t = (dot + 1f) * 0.5f;  // maps [-1,1] → [0,1]
         Color c = Color.Lerp(m_BackColor, m_FrontColor, t);
-        m_instanceMaterial.color = c;
+        m_InstanceMaterial.color = c;
+    }
+
+    #endregion
+
+    #region Mesh Animation
+
+    /// <summary>
+    /// Displaces each vertex along its normal by an amount given by Perlin noise.
+    /// </summary>
+    private void AnimateVertices()
+    {
+        Vector3[] displaced = new Vector3[m_OriginalVertices.Length];
+        float timeOffset = Time.time * m_NoiseSpeed;
+
+        for (int i = 0; i < displaced.Length; i++)
+        {
+            Vector3 orig = m_OriginalVertices[i];
+            Vector3 norm = m_OriginalNormals[i];
+
+            // sample 2D Perlin noise based on vertex position and time
+            float sampleX = (orig.x * m_NoiseFrequency) + timeOffset;
+            float sampleY = (orig.y * m_NoiseFrequency) + timeOffset;
+            float noise = Mathf.PerlinNoise(sampleX, sampleY);
+
+            float displacement = noise * m_NoiseAmplitude;
+            displaced[i] = orig + (norm * displacement);
+        }
+
+        m_Mesh.vertices = displaced;
+        m_Mesh.RecalculateBounds();
     }
 
     #endregion
@@ -144,7 +225,6 @@ public class PentagonalPrism : ProceduralMesh
     #region Mesh Generation
 
     /// <summary>
-    /// Creates:
     /// - A bottom cap (fan) with normals pointing downwards (outward).
     /// - A top cap (fan) with normals pointing upwards (outward).
     /// - Side faces (quads split into two triangles) with outward normals.

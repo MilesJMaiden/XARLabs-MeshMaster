@@ -150,10 +150,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_material: {fileID: 2100000, guid: 2826259f599ea8f498ec91743b1f8c57, type: 2}
-  m_radius: 1
-  m_height: 2
-  m_targetTransform: {fileID: 1353471410}
-  m_angularSpeed: 180
+  m_Radius: 1
+  m_Height: 2
+  m_TargetTransform: {fileID: 1353471410}
+  m_AngularSpeed: 90
+  m_FrontColor: {r: 1, g: 0, b: 0, a: 1}
+  m_BackColor: {r: 0, g: 0, b: 1, a: 1}
+  m_NoiseAmplitude: 1
+  m_NoiseFrequency: 1
+  m_NoiseSpeed: 2
 --- !u!4 &180584555
 Transform:
   m_ObjectHideFlags: 0
