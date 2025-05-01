@@ -4,7 +4,8 @@
 /// <summary>
 /// Moves the GameObject’s position along a Lissajous curve in the XY-plane,
 /// and optionally visualizes the curve via a LineRenderer.
-/// Automatically updates the visualization if parameters change at runtime.
+/// Automatically updates the visualization if parameters change at runtime,
+/// and blends toward an attractor when it's within range.
 /// </summary>
 public class LissajousCurveMover : MonoBehaviour
 {
@@ -32,6 +33,10 @@ public class LissajousCurveMover : MonoBehaviour
     [SerializeField]
     private float m_PhaseOffset = 3f;
 
+    [Tooltip("Speed multiplier for movement along the curve.")]
+    [SerializeField]
+    private float m_Speed = 1f;
+
     [Header("Curve Visualization")]
 
     [Tooltip("Enable to draw the Lissajous curve with a LineRenderer.")]
@@ -50,23 +55,87 @@ public class LissajousCurveMover : MonoBehaviour
     [SerializeField]
     private Material m_LineMaterial;
 
+    [Header("Attraction Settings")]
+
+    [Tooltip("Enable attraction blending logic.")]
+    [SerializeField]
+    private bool m_EnableAttraction = true;
+
+    [Tooltip("Transform of the attractor (e.g., XR controller).")]
+    [SerializeField]
+    private Transform m_AttractorTransform;
+
+    [Tooltip("Distance threshold within which attraction is applied.")]
+    [SerializeField]
+    private float m_AttractionRange = 1f;
+
+    [Tooltip("How strongly the object is pulled toward the attractor (0–1).")]
+    [SerializeField]
+    [Range(0f, 1f)]
+    private float m_AttractionStrength = 1f;
+
     #endregion
 
     #region Private Members
 
-    /// <summary>Stored local position at start, used as origin for motion.</summary>
+    /// <summary>
+    /// Stored local position at start, used as origin for motion.
+    /// </summary>
     private Vector3 m_InitialLocalPosition;
 
-    /// <summary>Stored world position at start, used as origin for the drawn curve.</summary>
+    /// <summary>
+    /// Stored world position at start, used as origin for the drawn curve.
+    /// </summary>
     private Vector3 m_InitialWorldPosition;
 
-    /// <summary>Reference to the LineRenderer used to draw the curve.</summary>
+    /// <summary>
+    /// Reference to the LineRenderer used to draw the curve.
+    /// </summary>
     private LineRenderer m_LineRenderer;
 
-    // Last-known values for change detection
-    private float m_LastAmplitudeX, m_LastAmplitudeY, m_LastFrequencyX, m_LastFrequencyY, m_LastPhaseOffset, m_LastLineWidth;
+    /// <summary>
+    /// Cached amplitude along the X axis (A) from the last frame, for detecting changes.
+    /// </summary>
+    private float m_LastAmplitudeX;
+
+    /// <summary>
+    /// Cached amplitude along the Y axis (B) from the last frame, for detecting changes.
+    /// </summary>
+    private float m_LastAmplitudeY;
+
+    /// <summary>
+    /// Cached frequency multiplier for X (a) from the last frame, for detecting changes.
+    /// </summary>
+    private float m_LastFrequencyX;
+
+    /// <summary>
+    /// Cached frequency multiplier for Y (b) from the last frame, for detecting changes.
+    /// </summary>
+    private float m_LastFrequencyY;
+
+    /// <summary>
+    /// Cached phase offset (δ) from the last frame, for detecting changes.
+    /// </summary>
+    private float m_LastPhaseOffset;
+
+    /// <summary>
+    /// Cached line width of the LineRenderer from the last frame, for detecting changes.
+    /// </summary>
+    private float m_LastLineWidth;
+
+    /// <summary>
+    /// Cached curve resolution from the last frame, for detecting changes.
+    /// </summary>
     private int m_LastCurveResolution;
+
+    /// <summary>
+    /// Cached flag indicating whether the curve was shown in the last frame, for detecting changes.
+    /// </summary>
     private bool m_LastShowCurve;
+
+    /// <summary>
+    /// Cached material used by the LineRenderer from the last frame, for detecting changes.
+    /// </summary>
     private Material m_LastLineMaterial;
 
     #endregion
@@ -88,22 +157,88 @@ public class LissajousCurveMover : MonoBehaviour
     }
 
     /// <summary>
-    /// Moves along the Lissajous path each frame, toggles curve visibility,
-    /// and regenerates the curve if any parameter has changed.
+    /// Moves along the Lissajous path each frame, blends toward attractor if in range,
+    /// toggles curve visibility, and regenerates the curve if any parameter has changed.
     /// </summary>
     private void Update()
     {
-        // Animate position
-        float t = Time.time;
+        Vector3 baseLocal = ComputeBaseCurveLocalPosition();
+        baseLocal = BlendAttraction(baseLocal);
+        transform.localPosition = baseLocal;
+        UpdateVisualization();
+    }
+
+    #endregion
+
+    #region Movement Logic
+
+    /// <summary>
+    /// Computes the base Lissajous position in local space.
+    /// </summary>
+    /// <returns>Local position along the curve.</returns>
+    private Vector3 ComputeBaseCurveLocalPosition()
+    {
+        float t = Time.time * m_Speed;
         float x = m_AmplitudeX * Mathf.Sin(m_FrequencyX * t + m_PhaseOffset);
         float y = m_AmplitudeY * Mathf.Sin(m_FrequencyY * t);
-        transform.localPosition = m_InitialLocalPosition + new Vector3(x, y, 0f);
+        return m_InitialLocalPosition + new Vector3(x, y, 0f);
+    }
 
-        // Toggle visibility if needed
+    #endregion
+
+    #region Attraction Blend
+
+    /// <summary>
+    /// Blends the base position toward the attractor if within range.
+    /// </summary>
+    /// <param name="baseLocal">Original curve position.</param>
+    /// <returns>Blended local position.</returns>
+    private Vector3 BlendAttraction(Vector3 baseLocal)
+    {
+        if (!m_EnableAttraction || m_AttractorTransform == null) { return baseLocal; }
+
+        float dist = Vector3.Distance(transform.position, m_AttractorTransform.position);
+        if (dist > m_AttractionRange)
+        {
+            return baseLocal;
+        }
+
+        float weight = 1f - (dist / m_AttractionRange);
+        weight = weight * m_AttractionStrength;
+
+        Vector3 attractorLocal;
+        if (transform.parent != null)
+        {
+            attractorLocal = transform.parent.InverseTransformPoint(
+                m_AttractorTransform.position
+            );
+        }
+        else
+        {
+            attractorLocal = m_AttractorTransform.position;
+        }
+
+        return Vector3.Lerp(
+            baseLocal,
+            attractorLocal,
+            weight
+        );
+    }
+
+    #endregion
+
+    #region Visualization & Regeneration
+
+    /// <summary>
+    /// Toggles the LineRenderer and regenerates the curve if parameters changed.
+    /// </summary>
+    private void UpdateVisualization()
+    {
         if (m_LineRenderer.enabled != m_ShowCurve)
+        {
             m_LineRenderer.enabled = m_ShowCurve;
+        }
 
-        // Regenerate curve if parameters were tweaked
         if (ParametersChanged())
         {
             UpdateLineRendererSettings();
@@ -123,14 +258,19 @@ public class LissajousCurveMover : MonoBehaviour
     {
         m_LineRenderer = GetComponent<LineRenderer>();
         if (m_LineRenderer == null)
+        {
             m_LineRenderer = gameObject.AddComponent<LineRenderer>();
+        }
 
         m_LineRenderer.loop = false;
         m_LineRenderer.useWorldSpace = true;
         m_LineRenderer.widthMultiplier = m_LineWidth;
 
-        if (m_LineMaterial != null)
+        if (m_LineMaterial != null) 
+        {
             m_LineRenderer.material = m_LineMaterial;
+        }
+
     }
 
     #endregion
@@ -143,11 +283,18 @@ public class LissajousCurveMover : MonoBehaviour
     private void GenerateCurve()
     {
         int resolution = Mathf.Max(2, m_CurveResolution);
-        var points = new Vector3[resolution + 1];
 
+        // time to complete one full sin(a t) cycle = 2π/a
+        float periodX = 2f * Mathf.PI / m_FrequencyX;
+        float periodY = 2f * Mathf.PI / m_FrequencyY;
+
+        // pick whichever is longer so you cover both
+        float samplePeriod = Mathf.Max(periodX, periodY);
+
+        var points = new Vector3[resolution + 1];
         for (int i = 0; i <= resolution; i++)
         {
-            float t = 2f * Mathf.PI * i / resolution;
+            float t = samplePeriod * i / resolution;
             float x = m_AmplitudeX * Mathf.Sin(m_FrequencyX * t + m_PhaseOffset);
             float y = m_AmplitudeY * Mathf.Sin(m_FrequencyY * t);
             points[i] = m_InitialWorldPosition + new Vector3(x, y, 0f);
@@ -200,7 +347,9 @@ public class LissajousCurveMover : MonoBehaviour
     {
         m_LineRenderer.widthMultiplier = m_LineWidth;
         if (m_LineMaterial != null && m_LineRenderer.material != m_LineMaterial)
+        {
             m_LineRenderer.material = m_LineMaterial;
+        }
     }
 
     #endregion

@@ -10,6 +10,7 @@ public abstract class ProceduralMesh : MonoBehaviour
     [Tooltip("Material used for the generated mesh.")]
     [SerializeField]
     private Material m_material;
+
     #endregion
 
     #region Properties
@@ -17,6 +18,7 @@ public abstract class ProceduralMesh : MonoBehaviour
     /// Name to assign to the generated child GameObject.
     /// </summary>
     protected abstract string ObjectName { get; }
+
     #endregion
 
     #region Unity Callbacks

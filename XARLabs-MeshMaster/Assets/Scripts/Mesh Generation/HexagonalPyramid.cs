@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 #region HexagonalPyramid
@@ -16,20 +16,20 @@ public class HexagonalPyramid : ProceduralMesh
     [Tooltip("Height from base plane to apex.")]
     [SerializeField]
     private float m_Height = 2f;
+
     #endregion
 
     #region Properties
-    /// <inheritdoc/>
+
     protected override string ObjectName => "ObjectB";
     #endregion
 
     #region Mesh Generation
-    /// <inheritdoc/>
-    /// <remarks>
+    /// <summary>
     /// Creates:
     /// - A base cap (fan) with normals pointing downwards (outward).
     /// - Side faces (triangles) with normals pointing outward from the apex.
-    /// </remarks>
+    /// </summary>
     protected override void BuildMesh(Mesh targetMesh)
     {
         const int sideCount = 6;
@@ -40,10 +40,7 @@ public class HexagonalPyramid : ProceduralMesh
         for (int i = 0; i < sideCount; i++)
         {
             float angle = 2f * Mathf.PI * i / sideCount;
-            vertices.Add(new Vector3(
-                Mathf.Cos(angle) * m_Radius,
-                0f,
-                Mathf.Sin(angle) * m_Radius));
+            vertices.Add(new Vector3(Mathf.Cos(angle) * m_Radius, 0f, Mathf.Sin(angle) * m_Radius));
         }
 
         // Apex

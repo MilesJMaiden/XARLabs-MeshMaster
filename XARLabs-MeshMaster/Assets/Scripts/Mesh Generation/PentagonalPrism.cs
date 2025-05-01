@@ -115,7 +115,8 @@ public class PentagonalPrism : ProceduralMesh
 
     /// <summary>
     /// After the mesh is built by the base class, grab the child’s MeshRenderer
-    /// instantiate its material for color updates, and cache original mesh data for animation.    /// </summary>
+    /// instantiate its material for color updates, and cache original mesh data for animation.
+    /// </summary>
     private void Start()
     {
         Transform child = transform.Find(ObjectName);
@@ -127,9 +128,13 @@ public class PentagonalPrism : ProceduralMesh
 
         m_MeshRenderer = child.GetComponent<MeshRenderer>();
         if (m_MeshRenderer != null)
+        {
             m_InstanceMaterial = m_MeshRenderer.material;
+        }
         else
+        {
             Debug.LogWarning($"[{name}] MeshRenderer not found on child '{ObjectName}'.");
+        }
 
         m_MeshFilter = child.GetComponent<MeshFilter>();
         if (m_MeshFilter != null)
@@ -145,7 +150,7 @@ public class PentagonalPrism : ProceduralMesh
     }
 
     /// <summary>
-    /// Each frame: rotates to face the target and updates the base color,
+    /// Each frame: applies attraction, rotates to face the target and updates the base color,
     /// and animates the mesh vertices along their normals via Perlin noise.
     /// </summary>
     private void Update()
@@ -156,9 +161,14 @@ public class PentagonalPrism : ProceduralMesh
             if (toTarget.sqrMagnitude > Mathf.Epsilon)
             {
                 if (m_EnableRotation)
+                {
                     RotateTowardsTarget(toTarget);
+                }
+
                 if (m_EnableColor)
+                {
                     UpdateColorBasedOnAngle(toTarget);
+                }
             }
         }
 
@@ -180,11 +190,7 @@ public class PentagonalPrism : ProceduralMesh
     {
         Quaternion currentRot = transform.rotation;
         Quaternion targetRot = Quaternion.LookRotation(toTarget.normalized, Vector3.up);
-        transform.rotation = Quaternion.RotateTowards(
-            currentRot,
-            targetRot,
-            m_AngularSpeed * Time.deltaTime
-        );
+        transform.rotation = Quaternion.RotateTowards(currentRot, targetRot, m_AngularSpeed * Time.deltaTime);
     }
 
     #endregion
@@ -239,6 +245,7 @@ public class PentagonalPrism : ProceduralMesh
     #region Mesh Generation
 
     /// <summary>
+    /// Creates:
     /// - A bottom cap (fan) with normals pointing downwards (outward).
     /// - A top cap (fan) with normals pointing upwards (outward).
     /// - Side faces (quads split into two triangles) with outward normals.
@@ -255,20 +262,14 @@ public class PentagonalPrism : ProceduralMesh
         for (int i = 0; i < sideCount; i++)
         {
             float angle = 2f * Mathf.PI * i / sideCount;
-            vertices.Add(new Vector3(
-                Mathf.Cos(angle) * m_Radius,
-               -halfHeight,
-                Mathf.Sin(angle) * m_Radius));
+            vertices.Add(new Vector3(Mathf.Cos(angle) * m_Radius, -halfHeight, Mathf.Sin(angle) * m_Radius));
         }
 
         // Top ring
         for (int i = 0; i < sideCount; i++)
         {
             float angle = 2f * Mathf.PI * i / sideCount;
-            vertices.Add(new Vector3(
-                Mathf.Cos(angle) * m_Radius,
-                 halfHeight,
-                Mathf.Sin(angle) * m_Radius));
+            vertices.Add(new Vector3(Mathf.Cos(angle) * m_Radius, halfHeight, Mathf.Sin(angle) * m_Radius));
         }
 
         // Center points for caps
