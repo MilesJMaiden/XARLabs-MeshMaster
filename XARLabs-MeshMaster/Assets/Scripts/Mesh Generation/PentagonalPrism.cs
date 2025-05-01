@@ -11,11 +11,11 @@ public class PentagonalPrism : ProceduralMesh
     [Header("Prism Settings")]
     [Tooltip("Radius of the pentagon base.")]
     [SerializeField]
-    private float m_radius = 1f;
+    private float m_Radius = 1f;
 
     [Tooltip("Total height of the prism.")]
     [SerializeField]
-    private float m_height = 2f;
+    private float m_Height = 2f;
     #endregion
 
     #region Properties
@@ -34,7 +34,7 @@ public class PentagonalPrism : ProceduralMesh
     protected override void BuildMesh(Mesh targetMesh)
     {
         const int sideCount = 5;
-        float halfHeight = m_height * 0.5f;
+        float halfHeight = m_Height * 0.5f;
 
         var vertices = new List<Vector3>();
         var triangles = new List<int>();
@@ -44,9 +44,9 @@ public class PentagonalPrism : ProceduralMesh
         {
             float angle = 2f * Mathf.PI * i / sideCount;
             vertices.Add(new Vector3(
-                Mathf.Cos(angle) * m_radius,
+                Mathf.Cos(angle) * m_Radius,
                -halfHeight,
-                Mathf.Sin(angle) * m_radius));
+                Mathf.Sin(angle) * m_Radius));
         }
 
         // Top ring
@@ -54,9 +54,9 @@ public class PentagonalPrism : ProceduralMesh
         {
             float angle = 2f * Mathf.PI * i / sideCount;
             vertices.Add(new Vector3(
-                Mathf.Cos(angle) * m_radius,
+                Mathf.Cos(angle) * m_Radius,
                  halfHeight,
-                Mathf.Sin(angle) * m_radius));
+                Mathf.Sin(angle) * m_Radius));
         }
 
         // Center points for caps

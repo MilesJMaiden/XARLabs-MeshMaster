@@ -11,11 +11,11 @@ public class HexagonalPyramid : ProceduralMesh
     [Header("Pyramid Settings")]
     [Tooltip("Radius of the hexagonal base.")]
     [SerializeField]
-    private float m_radius = 1f;
+    private float m_Radius = 1f;
 
     [Tooltip("Height from base plane to apex.")]
     [SerializeField]
-    private float m_height = 2f;
+    private float m_Height = 2f;
     #endregion
 
     #region Properties
@@ -41,14 +41,14 @@ public class HexagonalPyramid : ProceduralMesh
         {
             float angle = 2f * Mathf.PI * i / sideCount;
             vertices.Add(new Vector3(
-                Mathf.Cos(angle) * m_radius,
+                Mathf.Cos(angle) * m_Radius,
                 0f,
-                Mathf.Sin(angle) * m_radius));
+                Mathf.Sin(angle) * m_Radius));
         }
 
         // Apex
         int apexIndex = vertices.Count;
-        vertices.Add(new Vector3(0f, m_height, 0f));
+        vertices.Add(new Vector3(0f, m_Height, 0f));
 
         // Base center
         int baseCenterIndex = vertices.Count;

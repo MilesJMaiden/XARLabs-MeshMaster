@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 180584555}
   - component: {fileID: 180584554}
+  - component: {fileID: 180584556}
   m_Layer: 0
   m_Name: PentagonalPrism
   m_TagString: Untagged
@@ -149,8 +150,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_material: {fileID: 2100000, guid: 2826259f599ea8f498ec91743b1f8c57, type: 2}
-  m_radius: 1
-  m_height: 2
+  m_Radius: 1
+  m_Height: 2
 --- !u!4 &180584555
 Transform:
   m_ObjectHideFlags: 0
@@ -166,6 +167,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &180584556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 180584553}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52273ade35c00a04a95eaebfe064537c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AmplitudeX: 4
+  m_AmplitudeY: 3
+  m_FrequencyX: 2
+  m_FrequencyY: 4
+  m_PhaseOffset: 3
+  m_ShowCurve: 1
+  m_CurveResolution: 100
+  m_LineWidth: 0.05
+  m_LineMaterial: {fileID: 2100000, guid: ae6a507f6a3bc2a42b664b38b137a682, type: 2}
 --- !u!1 &381186494
 GameObject:
   m_ObjectHideFlags: 0
@@ -389,6 +411,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1353471410}
   - component: {fileID: 1353471409}
+  - component: {fileID: 1353471411}
   m_Layer: 0
   m_Name: HexagonalPyramid
   m_TagString: Untagged
@@ -409,8 +432,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_material: {fileID: 2100000, guid: d50c2b80f9557ea41b7a37620a3e8c2c, type: 2}
-  m_radius: 1
-  m_height: 2
+  m_Radius: 1
+  m_Height: 2
 --- !u!4 &1353471410
 Transform:
   m_ObjectHideFlags: 0
@@ -426,6 +449,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1353471411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1353471408}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 52273ade35c00a04a95eaebfe064537c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_AmplitudeX: 4
+  m_AmplitudeY: 3
+  m_FrequencyX: 2
+  m_FrequencyY: 4
+  m_PhaseOffset: 3
+  m_ShowCurve: 1
+  m_CurveResolution: 100
+  m_LineWidth: 0.05
+  m_LineMaterial: {fileID: 2100000, guid: ae6a507f6a3bc2a42b664b38b137a682, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
