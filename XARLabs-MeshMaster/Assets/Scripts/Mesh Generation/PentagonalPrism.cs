@@ -176,6 +176,18 @@ public class PentagonalPrism : ProceduralMesh
         {
             AnimateVertices();
         }
+
+        if (m_Mesh != null && m_OriginalVertices != null && m_OriginalNormals != null)
+        {
+            if (m_EnableNoise)
+            {
+                AnimateVertices();
+            }
+            else
+            {
+                RestoreOriginalMesh();
+            }
+        }
     }
 
     #endregion
@@ -237,6 +249,16 @@ public class PentagonalPrism : ProceduralMesh
         }
 
         m_Mesh.vertices = displaced;
+        m_Mesh.RecalculateBounds();
+    }
+
+    /// <summary>
+    /// Restores the mesh to its original vertex positions and normals.
+    /// </summary>
+    private void RestoreOriginalMesh()
+    {
+        m_Mesh.vertices = m_OriginalVertices;
+        m_Mesh.normals = m_OriginalNormals;
         m_Mesh.RecalculateBounds();
     }
 
